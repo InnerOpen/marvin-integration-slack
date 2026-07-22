@@ -31,18 +31,22 @@ def _ctx(secret=None, http=None):
     return IntegrationContext(config={}, secret=secret, logger=_LOG, http=http or _StubHttp())
 
 
-def test_check_logic():
+def test_check_accepts_bare_token_full_url_and_apprise_form():
     p = SlackProvider()
-    assert p.check(_ctx(secret="https://hooks.slack.com/services/T/B/x")) == ("ok", None)
+    assert p.check(_ctx(secret="T00000000/B00000000/xxxxxxxx")) == ("ok", None)  # bare token
+    assert p.check(_ctx(secret="https://hooks.slack.com/services/T/B/x")) == ("ok", None)  # full URL
+    assert p.check(_ctx(secret="slack://T/B/x")) == ("ok", None)  # apprise-style
     assert p.check(_ctx(secret=None))[0] == "unconfigured"
-    assert p.check(_ctx(secret="https://evil.example/webhook"))[0] == "error"
+    assert p.check(_ctx(secret="onepart"))[0] == "error"  # not enough token segments
+    assert p.check(_ctx(secret="https://evil.example/webhook"))[0] == "error"  # non-slack URL
 
 
-def test_send_message_posts_text():
+def test_send_message_posts_to_normalized_url():
     http = _StubHttp()
     p = SlackProvider()
-    result = p.run_action("send_message", {"text": "Recipe published!"}, _ctx(secret="https://hooks.slack.com/x", http=http))
+    result = p.run_action("send_message", {"text": "Recipe published!"}, _ctx(secret="T1/B2/c3", http=http))
     assert result["status_code"] == 200
+    assert http.last["url"] == "https://hooks.slack.com/services/T1/B2/c3"  # base prepended
     assert http.last["json"] == {"text": "Recipe published!"}
 
 

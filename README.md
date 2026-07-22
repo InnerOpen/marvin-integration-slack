@@ -20,16 +20,19 @@ That's it — no changes to Marvin core or its frontend. Marvin discovers the pr
 
 ## Configure
 
-1. In Slack, create an **Incoming Webhook** for the target channel; copy the webhook URL.
-2. In Marvin: **Settings → Integrations → Slack → Configure**, paste the webhook URL (stored as a
-   secret), and save.
+1. In Slack, create an **Incoming Webhook** for the target channel.
+2. In Marvin: **Settings → Integrations → Slack → Configure**, paste the **webhook token** — the
+   `T00000000/B00000000/XXXX` path (the same value Apprise uses as `slack://<token>`). A full
+   `https://hooks.slack.com/services/...` URL works too. Save.
 3. Use the **Send message** action from an automation, or test-fire it from the integration card.
+
+The provider knows the `hooks.slack.com/services/` base URL, so you only supply the token.
 
 ## Credential & action
 
 | | |
 |---|---|
-| **Credential** | `webhook_url` — the Slack incoming webhook (contains a secret token) |
+| **Credential** | `webhook_token` — the webhook token path (`T…/B…/…`), or a full webhook URL |
 | **Action** | `send_message` — `{ "text": "..." }` |
 
 ## Develop

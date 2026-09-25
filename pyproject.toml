@@ -1,10 +1,10 @@
 [project]
 name = "marvin-integration-slack"
-version = "0.1.0"
+version = "0.2.0"
 description = "Slack integration for Marvin — post messages to a channel via an incoming webhook."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["marvin-integration-sdk>=0.1,<1"]
+dependencies = ["marvin-integration-sdk>=0.2,<1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.11"]
@@ -13,6 +13,10 @@ dev = ["pytest>=8", "ruff>=0.11"]
 # startup and registers whatever providers it finds. No core or frontend changes needed.
 [project.entry-points."marvin.integrations"]
 slack = "marvin_integration_slack:SlackProvider"
+
+# Dev only: resolve the SDK from the sibling checkout. Released builds take it from the index.
+[tool.uv.sources]
+marvin-integration-sdk = { path = "../MarvinIntegrationSDK", editable = true }
 
 [build-system]
 requires = ["hatchling"]

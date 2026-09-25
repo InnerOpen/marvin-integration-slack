@@ -3,8 +3,8 @@
 import logging
 
 import pytest
-
 from marvin_integration_sdk import IntegrationContext
+
 from marvin_integration_slack import SlackProvider
 
 _LOG = logging.getLogger("test")
@@ -66,3 +66,15 @@ def test_send_message_surfaces_http_error():
     p = SlackProvider()
     with pytest.raises(ValueError):
         p.run_action("send_message", {"text": "hi"}, _ctx(secret="https://hooks.slack.com/x", http=_StubHttp(status=404)))
+
+
+def test_provider_declares_the_connection_that_makes_it_useful():
+    """A webhook posts nothing until something decides when to send. The provider declares that
+    connection so a workspace does not have to wire the same thing by hand."""
+    content = SlackProvider().content
+    assert [c.kind for c in content] == ["event_subscription"]
+    sub = content[0]
+    assert sub.payload["event_type"] == "entry_published"
+    assert sub.payload["action"] == "send_message"
+    # the action it names must be one this provider actually has
+    assert sub.payload["action"] in {a.key for a in SlackProvider().actions}

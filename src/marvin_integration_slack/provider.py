@@ -7,6 +7,7 @@ A full ``https://hooks.slack.com/services/...`` URL is accepted too.
 
 from marvin_integration_sdk import (
     CATEGORY_NOTIFY,
+    ContentBlueprint,
     CredentialField,
     IntegrationContext,
     IntegrationProvider,
@@ -24,8 +25,7 @@ def _webhook_url(secret: str) -> str:
     or the full ``https://hooks.slack.com/...`` URL.
     """
     s = secret.strip()
-    if s.startswith("slack://"):
-        s = s[len("slack://") :]
+    s = s.removeprefix("slack://")
     if s.startswith(("http://", "https://")):
         return s
     return _BASE + s.lstrip("/")
@@ -44,6 +44,7 @@ class SlackProvider(IntegrationProvider):
     name = "Slack"
     description = "Post messages to a Slack channel via an incoming webhook."
     category = CATEGORY_NOTIFY
+    icon = "💬"
 
     credentials = (
         CredentialField(
@@ -53,6 +54,26 @@ class SlackProvider(IntegrationProvider):
             "(the same value Apprise uses as slack://<token>). A full https://hooks.slack.com/… URL also works.",
         ),
     )
+    # --- what this needs to actually do anything ---
+    #
+    # A webhook on its own posts nothing: something has to decide when to send. Declaring the
+    # connection means Marvin can offer it on the integration's card instead of every workspace
+    # wiring the same thing by hand. It is created switched off — applying gives you the wiring,
+    # turning it on is a deliberate second act.
+    content = (
+        ContentBlueprint(
+            kind="event_subscription",
+            slug="announce-published-entries",
+            name="Announce published entries",
+            description="Post to Slack whenever an entry is published. Created disabled; edit the message, then enable.",
+            payload={
+                "event_type": "entry_published",
+                "action": "send_message",
+                "args": {"text": "New: {{title}}"},
+            },
+        ),
+    )
+
     actions = (
         ProviderAction(
             key="send_message",
@@ -85,7 +106,7 @@ class SlackProvider(IntegrationProvider):
 
         try:
             resp = ctx.http.post(_webhook_url(ctx.secret), json={"text": text})
-        except Exception as e:  # noqa: BLE001 — surface transport/guard failures cleanly
+        except Exception as e:
             ctx.logger.warning(f"[slack] webhook unreachable: {e}")
             raise ValueError(f"Slack webhook unreachable: {e}") from e
 

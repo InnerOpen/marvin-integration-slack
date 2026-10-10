@@ -56,6 +56,18 @@ def test_send_message_requires_text():
         p.run_action("send_message", {}, _ctx(secret="https://hooks.slack.com/x"))
 
 
+def test_send_message_is_the_notify_capability_and_takes_a_title_and_body():
+    p = SlackProvider()
+    action = next(a for a in p.actions if a.key == "send_message")
+    assert action.capability == "notify"
+    http = _StubHttp()
+    result = p.run_action("send_message", {"title": "Site deployed", "body": "https://x.example is live."}, _ctx(secret="T1/B2/c3", http=http))
+    assert http.last["json"] == {"text": "*Site deployed*\nhttps://x.example is live."}
+    assert result["sent"] is True
+    p.run_action("send_message", {"body": "Just a body."}, _ctx(secret="T1/B2/c3", http=http))
+    assert http.last["json"] == {"text": "Just a body."}
+
+
 def test_unknown_action_raises():
     p = SlackProvider()
     with pytest.raises(NotImplementedError):

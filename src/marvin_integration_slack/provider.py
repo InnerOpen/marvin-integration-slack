@@ -79,12 +79,19 @@ class SlackProvider(IntegrationProvider):
             key="send_message",
             label="Send message",
             description="Post a message to the channel wired to this webhook.",
+            # The standard notification capability: a workflow (or recipe) that asks for "notify" with a title and
+            # body can send through Slack as well as Apprise. `text` stays the plain way to post.
+            capability="notify",
             input_schema={
                 "type": "object",
-                "properties": {"text": {"type": "string", "title": "Message"}},
-                "required": ["text"],
+                "properties": {
+                    "text": {"type": "string", "title": "Message"},
+                    "title": {"type": "string", "title": "Title", "description": "Shown in bold above the body."},
+                    "body": {"type": "string", "title": "Body"},
+                },
                 "additionalProperties": False,
             },
+            output_schema={"type": "object", "properties": {"sent": {"type": "boolean"}, "status_code": {"type": "integer"}}},
         ),
     )
 
@@ -100,9 +107,9 @@ class SlackProvider(IntegrationProvider):
             raise NotImplementedError(f"slack has no action '{key}'")
         if not ctx.secret:
             raise ValueError("No webhook token configured.")
-        text = (args or {}).get("text")
+        text = _message(args or {})
         if not text:
-            raise ValueError("A 'text' message is required.")
+            raise ValueError("A message is required: 'text', or a 'body' (with an optional 'title').")
 
         try:
             resp = ctx.http.post(_webhook_url(ctx.secret), json={"text": text})
@@ -112,4 +119,14 @@ class SlackProvider(IntegrationProvider):
 
         if not resp.ok:
             raise ValueError(f"Slack returned HTTP {resp.status_code}: {resp.text[:200]}")
-        return {"status_code": resp.status_code}
+        return {"sent": True, "status_code": resp.status_code}
+
+
+def _message(args: dict) -> str:
+    """The text to post: `text` as is, else the notify capability's `title` (bold) over its `body`."""
+    if args.get("text"):
+        return str(args["text"])
+    title, body = str(args.get("title") or "").strip(), str(args.get("body") or "").strip()
+    if title and body:
+        return f"*{title}*\n{body}"
+    return body or title

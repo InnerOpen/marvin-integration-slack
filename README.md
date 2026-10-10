@@ -33,7 +33,7 @@ The provider knows the `hooks.slack.com/services/` base URL, so you only supply 
 | | |
 |---|---|
 | **Credential** | `webhook_token` — the webhook token path (`T…/B…/…`), or a full webhook URL |
-| **Action** | `send_message` — `{ "text": "..." }` |
+| **Action** | `send_message` — `{ "text": "..." }`, or `{ "title": "...", "body": "..." }` (title in bold over the body). It is the standard **`notify`** capability, so a workflow or Workflow Library recipe that sends a notification can use Slack as well as Apprise. |
 
 ## Develop
 

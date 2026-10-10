@@ -22,7 +22,7 @@ wheels = [
 
 [[package]]
 name = "marvin-integration-sdk"
-version = "0.2.0"
+version = "0.8.0"
 source = { editable = "../MarvinIntegrationSDK" }
 
 [package.metadata]
@@ -34,7 +34,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "marvin-integration-slack"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "marvin-integration-sdk" },

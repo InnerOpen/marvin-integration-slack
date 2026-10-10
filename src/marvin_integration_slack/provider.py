@@ -123,10 +123,10 @@ class SlackProvider(IntegrationProvider):
 
 
 def _message(args: dict) -> str:
-    """The text to post: `text` as is, else the notify capability's `title` (bold) over its `body`."""
-    if args.get("text"):
-        return str(args["text"])
-    title, body = str(args.get("title") or "").strip(), str(args.get("body") or "").strip()
+    """The text to post: the message (`text`, or the notify capability's `body`), under its `title` in bold when one
+    is given — Marvin's alert routing sends `title` + `text`, a notify step `title` + `body`."""
+    title = str(args.get("title") or "").strip()
+    body = str(args.get("text") or args.get("body") or "").strip()
     if title and body:
         return f"*{title}*\n{body}"
     return body or title

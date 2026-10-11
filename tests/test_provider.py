@@ -3,7 +3,8 @@
 import logging
 
 import pytest
-from marvin_integration_sdk import IntegrationContext
+from marvin_integration_sdk import IntegrationContext, load_guide
+from marvin_integration_sdk.testing import IntegrationContract
 
 from marvin_integration_slack import SlackProvider
 
@@ -92,3 +93,24 @@ def test_provider_declares_the_connection_that_makes_it_useful():
     assert sub.payload["action"] == "send_message"
     # the action it names must be one this provider actually has
     assert sub.payload["action"] in {a.key for a in SlackProvider().actions}
+
+
+# ── what Slack teaches Marvin (SDK 0.9.0) ────────────────────────────────────
+
+
+class TestSlackContract(IntegrationContract):
+    @pytest.fixture
+    def provider(self):
+        return SlackProvider()
+
+
+def test_the_guide_ships_with_the_package():
+    guide = load_guide(SlackProvider)
+    assert guide.startswith("# Slack") and "one Slack channel" in guide
+
+
+def test_the_announce_recipe_posts_title_and_link_through_send_message():
+    (recipe,) = SlackProvider.recipes
+    (step,) = recipe.definition["actions"]
+    assert (step["action"], step["integration"]) == ("send_message", "{{slack_integration}}")
+    assert step["args"]["body"] == "${entry.title}\n${entry.url}"  # run-time templates, filled when it runs

@@ -12,6 +12,7 @@ from marvin_integration_sdk import (
     IntegrationContext,
     IntegrationProvider,
     ProviderAction,
+    WorkflowRecipe,
     register_provider,
 )
 
@@ -71,6 +72,41 @@ class SlackProvider(IntegrationProvider):
                 "action": "send_message",
                 "args": {"text": "New: {{title}}"},
             },
+        ),
+    )
+
+    # What Marvin learns about Slack (SDK 0.9.0): a how-to its agents read when building workflows here, and a
+    # ready-made workflow in the Workflow Library, offered once Slack is connected.
+    guide = "guide.md"
+    recipes = (
+        WorkflowRecipe(
+            id="announce-entry-type",
+            title="Announce published entries",
+            outcome="Each published entry of one type is posted to the Slack channel, with its title and link.",
+            category="Notifications",
+            tags=("announce", "publishing"),
+            definition={
+                "trigger": {"type": "event", "event": "entry_published"},
+                "conditions": [{"field": "entry.entry_type", "op": "eq", "value": "{{entry_type}}"}],
+                "actions": [
+                    {
+                        "kind": "integration",
+                        "integration": "{{slack_integration}}",
+                        "action": "send_message",
+                        "args": {"title": "{{heading}}", "body": "${entry.title}\n${entry.url}"},
+                    }
+                ],
+            },
+            variables={
+                "entry_type": {"type": "entry_type_slug", "description": "Which entries to announce when they are published.", "example": "post"},
+                "slack_integration": {
+                    "type": "integration_slug",
+                    "description": "The Slack connection (its channel) to post to.",
+                    "example": "slack",
+                },
+                "heading": {"type": "text", "description": "Shown in bold above the entry's title and link.", "example": "New on the site"},
+            },
+            side_effects=({"kind": "external_post", "description": "Posts a message to the Slack channel."},),
         ),
     )
 

@@ -35,6 +35,14 @@ The provider knows the `hooks.slack.com/services/` base URL, so you only supply 
 | **Credential** | `webhook_token` — the webhook token path (`T…/B…/…`), or a full webhook URL |
 | **Action** | `send_message` — `{ "text": "..." }`, or `{ "title": "...", "body": "..." }` (title in bold over the body). It is the standard **`notify`** capability, so a workflow or Workflow Library recipe that sends a notification can use Slack as well as Apprise. |
 
+## What it teaches Marvin (0.4.0, SDK 0.9.0)
+
+- **A guide** (`src/marvin_integration_slack/guide.md`): connecting a webhook, formatting, what it can't do, and
+  what each Slack error means. Marvin's agents read it when building workflows where Slack is connected, and
+  Marvin's manual search finds it.
+- **A recipe** in the Workflow Library, *Announce published entries*: each published entry of one type is posted to
+  the channel with its title and link. Shown as "From the Slack plugin 0.4.0", offered once Slack is connected.
+
 ## Develop
 
 ```bash

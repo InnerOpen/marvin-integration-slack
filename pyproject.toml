@@ -1,10 +1,10 @@
 [project]
 name = "marvin-integration-slack"
-version = "0.3.0"
+version = "0.4.0"
 description = "Slack integration for Marvin — post messages to a channel via an incoming webhook."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["marvin-integration-sdk>=0.2,<1"]
+dependencies = ["marvin-integration-sdk>=0.9,<1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.11"]

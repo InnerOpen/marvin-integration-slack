@@ -46,6 +46,7 @@ class SlackProvider(IntegrationProvider):
     description = "Post messages to a Slack channel via an incoming webhook."
     category = CATEGORY_NOTIFY
     icon = "💬"
+    logo = "logo.svg"  # the Slack mark, shown instead of the emoji
 
     credentials = (
         CredentialField(
